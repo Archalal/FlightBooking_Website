@@ -17,7 +17,13 @@ const flightSchema=new mongoose.Schema({
         
         
     },
-    destinationName:{
+
+    departureAirportCode:{
+        type:String,
+        required:true
+    },
+    
+    departureName:{
         type:String,
         required:true
     },
@@ -25,22 +31,39 @@ const flightSchema=new mongoose.Schema({
         type:Date,
         required:true
     },
-    flightDuration:{
+    timeOfDeparture:{
         type:String,
         required:true
     },
-    departureCity:{
+    
+    destinationAirportCode:{
         type:String,
-        required:true
-    },
-    depatureAirportCode:{
-        type:String,
-        required:true
+        required: true
+       
     },
     destinationImg:{
         type:String,
         required:true
     },
+    destinationName:{
+        type:String,
+        required:true
+    },
+    dateOfDestination:{
+        type:Date,
+        required:true
+    },
+    timeOfDestination:{
+        type:String,
+        required:true
+    },
+    flightDuration:{
+        type:String,
+        required:true
+    },
+    
+   
+    
     refundable:{
         type:Boolean,
         required:true
@@ -49,27 +72,12 @@ const flightSchema=new mongoose.Schema({
         type:String,
         required:true
     },
-    availiableSeat:{
-        type:String,
-        required:true
-    },
     price:{
         type:Number,
         required:true
     },
-    arrivalAirportCode:{
-        type:String,
-        required: function() { 
-            return this.tripType === 'return' 
-          }
-       
-    },
-    arrivalCity:{
-        type:String,
-        required: function() { 
-            return this.tripType === 'return' 
-          }
-    },
+    
+    
     returnDate:{
         type:Date,
         required: function() { 
@@ -83,6 +91,10 @@ const flightSchema=new mongoose.Schema({
             return this.tripType === 'return' 
           }
 
+    },
+    avaiableSeat:{
+        type:"Number",
+        required:true
     },
     userId:{
         type:String,

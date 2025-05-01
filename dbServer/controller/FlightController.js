@@ -1,17 +1,28 @@
-const flights=require('../database/models/flightModel')
+const flights = require('../database/models/flightModel')
 
 
 exports.flightAddController=async(req,res)=>{
 
-  const  {
-        tripType,airlineName,flightNumber,destinationName,dateOfDeparture,flightDuration,departureCity,depatureAirportCode,
-        refundable,cabinClass,availiableSeat,price,arrivalAirportCode,arrivalCity,returnDate,returnTime
+  let  {
+        tripType,airlineName,flightNumber,departureAirportCode,departureName,dateOfDeparture,timeOfDeparture,destinationAirportCode,
+        destinationName,dateOfDestination,timeOfDestination,flightDuration,refundable,cabinClass,price,returnDate,returnTime,avaiableSeat
 
     }=req.body
     
     const destinationImg=req.file.filename
     // console.log(destinationImg);
     const userId=req.userId
+    if (dateOfDestination) {
+        const [day, month, year] = dateOfDestination.split("/");
+        dateOfDestination = new Date(`${year}-${month}-${day}`);
+      }
+
+      if (returnDate) {
+        const [day, month, year] = returnDate.split("/");
+        returnDate = new Date(`${year}-${month}-${day}`);
+      }
+
+    
     
 
 
@@ -22,9 +33,8 @@ exports.flightAddController=async(req,res)=>{
     else{
         if(tripType=="oneWay"){
             const newFlight=new flights({
-                tripType,airlineName,flightNumber,destinationName,dateOfDeparture,flightDuration,departureCity,depatureAirportCode,
-                destinationImg, refundable,cabinClass,availiableSeat,price,arrivalAirportCode:"",arrivalCity:"",returnDate:"",
-                returnTime:"",userId
+                tripType,airlineName,flightNumber,departureAirportCode,departureName,dateOfDeparture,timeOfDeparture,destinationAirportCode,destinationImg, destinationName,dateOfDestination,timeOfDestination
+                 ,flightDuration,refundable,cabinClass,price,returnDate:"",returnTime:"",avaiableSeat,userId
 
             })
 
@@ -33,24 +43,8 @@ exports.flightAddController=async(req,res)=>{
 
         }else{
             const newFlight=new flights({
-                tripType,
-                airlineName,
-                flightNumber,
-                destinationName,
-                dateOfDeparture,
-                flightDuration,
-                departureCity,
-                depatureAirportCode,
-                destinationImg,
-                refundable,
-                cabinClass,
-                availiableSeat,
-                price,
-                arrivalAirportCode,
-                arrivalCity,
-                returnDate,
-                returnTime,
-                userId
+                tripType,airlineName,flightNumber,departureAirportCode,departureName,dateOfDeparture,timeOfDeparture,destinationAirportCode,destinationImg, destinationName,dateOfDestination,timeOfDestination,
+        flightDuration,refundable,cabinClass,price,returnDate,returnTime,avaiableSeat,userId
             })
 
             await newFlight.save()
@@ -81,23 +75,8 @@ exports.flightEdit=async(req,res)=>{
    
 
         const{
-            tripType,
-            airlineName,
-            flightNumber,
-            destinationName,
-            dateOfDeparture,
-            flightDuration,
-            departureCity,
-            depatureAirportCode,
-            destinationImg,
-            refundable,
-            cabinClass,
-            availiableSeat,
-            price,
-            arrivalAirportCode,
-            arrivalCity,
-            returnDate,
-            returnTime
+            tripType,airlineName,flightNumber,departureAirportCode,departureName,dateOfDeparture,timeOfDeparture,destinationAirportCode,destinationImg, destinationName,dateOfDestination,timeOfDestination,
+        flightDuration,refundable,cabinClass,price,returnDate,returnTime,avaiableSeat
     
 
         }=req.body
@@ -113,24 +92,8 @@ exports.flightEdit=async(req,res)=>{
         const updatedFlight= await flights.findByIdAndUpdate(
             {_id:id},
             {
-                tripType,
-                airlineName,
-                flightNumber,
-                destinationName,
-                dateOfDeparture,
-                flightDuration,
-                departureCity,
-                depatureAirportCode,
-                destinationImg:changedImg,
-                refundable,
-                cabinClass,
-                availiableSeat,
-                price,
-                arrivalAirportCode,
-                arrivalCity,
-                returnDate,
-                returnTime,
-                userId
+                tripType,airlineName,flightNumber,departureAirportCode,departureName,dateOfDeparture,timeOfDeparture,destinationAirportCode,destinationImg:changedImg, destinationName,dateOfDestination,timeOfDestination,
+                flightDuration,refundable,cabinClass,price,returnDate,returnTime,avaiableSeat,userId
         
 
             },
@@ -168,4 +131,85 @@ exports.deleteFlight=async(req,res)=>{
     }catch(err){
         res.status(500).json({err:err})
     }
+}
+
+exports.getFlights=async(req,res)=>{
+    try{
+        const allFlights=await flights.find()
+        res.status(200).json(allFlights)
+    }
+    catch(err){
+        res.status(500).json({err:err})
+    }
+}
+
+exports.flightSearch=async(req,res)=>{
+    const{departureName, destinationName, dateOfDeparture, returnDate, cabinClass,avaiableSeat
+    }=req.query
+    console.log(departureName);
+    
+    try{
+
+        let query={}
+       
+        if(departureName){
+            query.departureName={$regex:departureName,$options:"i"}
+        }
+        if(destinationName){
+            query.destinationName={$regex:destinationName,$options:"i"}
+        }
+        if (dateOfDeparture) {
+            const date = new Date(dateOfDeparture);
+            query.dateOfDeparture = {
+              $gte: new Date(date.setHours(0, 0, 0, 0)),
+              $lte: new Date(date.setHours(23, 59, 59, 999)),
+            };
+          }
+          
+
+       
+
+        if(cabinClass){
+            query.cabinClass={$regex:cabinClass,$options:"i"}
+        }
+        if(avaiableSeat){
+            query.avaiableSeat={$gte: Number(avaiableSeat)}
+        }
+        if (returnDate) {
+            const date = new Date(returnDate);
+            query.returnDate = {
+              $gte: new Date(date.setHours(0, 0, 0, 0)),
+              $lte: new Date(date.setHours(23, 59, 59, 999)),
+            };
+            query.tripType = "return";
+          } else {
+            query.tripType = "oneWay";
+          }
+          
+         
+        
+          
+
+        const flightSearch=await flights.find(query)
+        res.status(200).json(flightSearch);
+
+    }catch(err){
+        res.status(500).json({err:err})
+    }
+}
+
+
+exports.getSingleFlight=async(req,res)=>{
+
+    const id=req.params.id
+    try{
+
+        let requestedFlight=await flights.findById(id)
+        res.status(200).json(requestedFlight)
+
+    }
+    catch(err){
+        res.status(500).json({err:err})
+    }
+
 }

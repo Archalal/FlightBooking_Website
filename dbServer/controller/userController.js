@@ -42,17 +42,19 @@ exports.loginController=async(req,res)=>{
 
    try{
     const existingUser=await users.findOne({email})
+    console.log(existingUser)
 
    if(!existingUser){
-    res.status(401).json("invalid email/password")
+    res.status(401).json("user doesn't exists")
    }
-   if(password){
-    if(existingUser.password==password){
-      res.status(401).json("invalid email/password")
+    if (password && existingUser.password !== password) {
+      return res.status(401).json("Invalid email/password");
     }
-   }
+
 
    const token=jwt.sign({token:existingUser._id},process.env.jWT)
+   console.log(token);
+   
    res.status(200).json({
     email:existingUser.email,
     username:existingUser.name,
@@ -166,3 +168,26 @@ exports.adminStaffAdd = async (req, res) => {
     });
   }
 };
+
+
+exports.getUserController=async(req,res)=>{
+  try{
+       const getUser=await users.find({})
+       res.status(200).json(getUser)
+  }catch(err){
+    res.status(500).json({err:err})
+  }
+}
+
+exports.getSingleUser=async(req,res)=>{
+ try{
+  const id=req.params.id
+  const findUser=await users.findById(id)
+  res.status(200).json(findUser)
+
+ }catch(err){
+  res.status(500).json({err:err})
+ }
+  
+  
+}
